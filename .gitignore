@@ -1,0 +1,16 @@
+# 忽略 Python 编译文件
+__pycache__/
+*.pyc
+
+# 忽略模型权重文件
+*.pt
+*.pth
+*.bin
+
+# 忽略数据集文件夹
+data/
+datasets/
+
+# 忽略环境文件
+.env
+venv/
