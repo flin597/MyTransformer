@@ -3,13 +3,16 @@ from torch.utils.data import Dataset, DataLoader
 from collections import Counter#计数器，返回一个字典{键：出现次数，...}
 import re
 
+# 训练、推理、测试都从这里读同一份数据，词表才一致
+DATA_PATH = "data/train_v2.tsv"
+
 _EN_TOKEN = re.compile(r"\w+(?:'\w+)*|[^\w\s]")#不加这个相同的词会因为跟的标点不同而被判作不同的出现次数
 
 def tokenize_en(text):
     return _EN_TOKEN.findall(text)
 
 def load_cmn_eng(path):
-    """读取 cmn.txt，每行格式：英文\t中文\t来源说明"""
+    """读取训练数据，每行前两列是：英文\t中文，后面的列不用"""
     dataset = []
     with open(path, encoding="utf-8") as f:
         for line in f:
@@ -132,7 +135,7 @@ if __name__ == "__main__":
 
     print("Loading the dataset...")
     # 为了测试方便，我们只取前 100 条数据，免得等太久
-    raw_dataset = load_cmn_eng("data/cmn.txt")[:100]
+    raw_dataset = load_cmn_eng(DATA_PATH)[:100]
 
     print(f"Loaded {len(raw_dataset)} pairs.")
     print("First example:", raw_dataset[0]["translation"])

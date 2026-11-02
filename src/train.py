@@ -7,31 +7,27 @@ from torch.utils.data import DataLoader
 # 注意：确保 model.py 里有 TransformerModel, create_padding_mask, create_tgt_mask
 # 确保 dataset.py 里有 TranslationDataset, build_vocab_from_dataset
 from src.model import Transformer, create_padding_mask, create_tgt_mask
-from modules.dataset import TranslationDataset, build_vocab_from_dataset, load_cmn_eng
+from modules.dataset import TranslationDataset, build_vocab_from_dataset, load_cmn_eng, DATA_PATH
 
 def main():
-    # ==========================================
+
     # 1. 基础配置（针对本地 CPU 极小化）
-    # ==========================================
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
     
-    # 为了本地跑得快，模型参数全部调小
     d_model = 256
     num_heads = 8
     num_layers = 4
     d_ff = 1024
     batch_size = 32
     max_len = 50
-    epochs = 10 # 本地跑 5 个 Epoch 意思一下
+    epochs = 30
     lr = 0.001
 
-    # ==========================================
     # 2. 准备数据
-    # ==========================================
     print("Loading the dataset...")
-    # 日常对话短句数据集 cmn-eng，全部用于训练
-    raw_dataset = load_cmn_eng("data/cmn.txt")
+    # 简体训练集：cmn-eng 加上问句、复句、长句、习语，由 tools/prepare_data.py 生成
+    raw_dataset = load_cmn_eng(DATA_PATH)
     
     print("Building vocabularies...")
     src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
@@ -45,9 +41,7 @@ def main():
     dataset = TranslationDataset(raw_dataset, src_vocab, tgt_vocab, max_len=max_len)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
 
-    # ==========================================
     # 3. 初始化模型、损失函数、优化器
-    # ==========================================
     model = Transformer(
         src_vocab_size=src_vocab_size, 
         tgt_vocab_size=tgt_vocab_size, 
@@ -62,9 +56,7 @@ def main():
     criterion = nn.CrossEntropyLoss(ignore_index=src_vocab.pad_idx)
     optimizer = optim.Adam(model.parameters(), lr=lr)
 
-    # ==========================================
     # 4. 开始训练
-    # ==========================================
     print("\nStarting training...")
     for epoch in range(epochs):
         model.train()
@@ -99,16 +91,15 @@ def main():
                 print(f"Epoch [{epoch+1}/{epochs}], Batch [{batch_idx}/{len(dataloader)}], Loss: {loss.item():.4f}")
                 
         avg_loss = total_loss / len(dataloader)
-        print(f"✅ Epoch {epoch+1} finished, average loss: {avg_loss:.4f}\n")
+        print(f"Epoch {epoch+1} finished, average loss: {avg_loss:.4f}\n")
         # 每个 epoch 结束后保存模型
         save_path = f"./checkpoint_epoch_{epoch+1}.pt"
         torch.save(model.state_dict(), save_path)
-        print(f"💾 Model saved to {save_path}")
+        print(f"Model saved to {save_path}")
 
-    # ==========================================
+
     # 5. 简单测试（翻译一句话）
-    # ==========================================
-    print("🔍 Testing the model output on the first sentence:")
+    print("Testing the model output on the first sentence:")
     model.eval()
     
     # 取测试集第一句话

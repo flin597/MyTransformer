@@ -1,0 +1,101 @@
+id	tier	en	zh_ref	key_points
+1	A	I love my dog.	我爱我的狗。	主宾不颠倒；狗
+2	A	He is a farmer.	他是农民。	他；农民
+3	A	She is very happy.	她很开心。	她；开心
+4	A	The cat is sleeping.	猫在睡觉。	猫；睡觉
+5	A	I am hungry.	我饿了。	饿
+6	A	It is very windy today.	今天风很大。	今天；风大
+7	A	We are teachers.	我们是老师。	复数“我们”；老师
+8	A	This book is mine.	这本书是我的。	这本书；我的
+9	A	Open the door.	开门。	祈使；开门
+10	A	Please wait here.	请在这里等。	请；这里；等
+11	A	I like apples.	我喜欢苹果。	喜欢；苹果
+12	A	They live in Beijing.	他们住在北京。	他们；住；北京
+13	A	My mother is a teacher.	我妈妈是老师。	妈妈；老师
+14	A	The water is too hot.	水太烫了。	水；太烫/太热
+15	A	I have two brothers.	我有两个兄弟。	数字“两”；兄弟
+16	A	Thank you for the gift.	谢谢你的礼物。	感谢；礼物
+17	A	Today is Monday.	今天是星期一。	今天；星期一
+18	A	The sky is blue.	天空是蓝色的。	天空；蓝色
+19	A	He runs fast.	他跑得很快。	跑；快
+20	A	I don't eat meat.	我不吃肉。	否定；吃肉
+21	B	What is your brother's name?	你哥哥叫什么名字？	疑问；兄弟（哥哥或弟弟均可）；名字
+22	B	Where does your sister work?	你姐姐在哪里工作？	疑问“哪里”；工作；姐姐或妹妹均可
+23	B	How old is your daughter?	你女儿多大了？	询问年龄；女儿
+24	B	Why is the baby crying?	宝宝为什么在哭？	为什么；宝宝；哭
+25	B	Who broke the window?	谁打破了窗户？	谁；打破；窗户
+26	B	Does she speak French?	她会说法语吗？	疑问；她；法语
+27	B	What time does the store open?	这家商店几点开门？	几点；商店；开门
+28	B	I went to the museum yesterday.	我昨天去了博物馆。	昨天；过去时；博物馆
+29	B	She will come back tomorrow.	她明天会回来。	明天；回来
+30	B	We have already eaten dinner.	我们已经吃过晚饭了。	已经；晚饭
+31	B	He did not go to the party.	他没有去参加聚会。	否定；聚会
+32	B	I have never been to Japan.	我从未去过日本。	从未；日本
+33	B	They were playing football when it started to rain.	开始下雨时，他们正在踢足球。	时间关系；踢足球；下雨
+34	B	She doesn't like coffee.	她不喜欢咖啡。	否定；咖啡
+35	B	Can you help my brother?	你能帮我弟弟吗？	疑问；帮；兄弟（哥哥或弟弟均可）
+36	B	Did you see that movie last week?	你上周看那部电影了吗？	上周；电影；疑问
+37	B	The train has just left.	火车刚刚开走了。	刚刚；火车
+38	B	I was not at home last night.	我昨晚不在家。	否定；昨晚
+39	B	How much does this shirt cost?	这件衬衫多少钱？	衬衫；多少钱
+40	B	Nobody knows the answer.	没有人知道答案。	全否定；答案
+41	C	You should go to bed early.	你应该早点睡觉。	应该；早睡
+42	C	You must not smoke here.	你不可以在这里吸烟。	禁止；这里；吸烟
+43	C	This car is more expensive than that one.	这辆车比那辆贵。	比较方向不能反
+44	C	He is the tallest boy in the class.	他是班上最高的男孩。	最高；班上
+45	C	My sister is as tall as I am.	我姐姐和我一样高。	一样高；姐姐或妹妹均可
+46	C	The letter was written by my father.	这封信是我父亲写的。	施事是父亲
+47	C	The window was broken by the children.	窗户被孩子们打破了。	被动；施事是孩子们
+48	C	There are three cats under the table.	桌子下面有三只猫。	数字“三”；桌子下面
+49	C	Most of my friends live abroad.	我的大多数朋友住在国外。	大多数；国外
+50	C	Few people came to the meeting.	很少有人来开会。	“很少”的否定义，不能译成“一些”
+51	C	I would like a cup of tea.	我想要一杯茶。	想要；一杯茶
+52	C	It may snow tonight.	今晚可能会下雪。	可能；今晚；下雪
+53	C	He used to smoke a lot.	他以前经常抽烟。	以前（现在不一定）；抽烟
+54	C	I am going to visit my grandparents this weekend.	这个周末我要去看望祖父母。	周末；祖父母
+55	C	She asked me to close the window.	她让我关上窗户。	她让我，不能反；关窗
+56	C	I want to learn how to ride a horse.	我想学骑马。	想学；骑马
+57	C	It took me three hours to finish my homework.	我花了三个小时才做完作业。	三个小时；作业
+58	C	Both of them are good at math.	他们俩都擅长数学。	都；擅长；数学
+59	C	Neither answer is correct.	两个答案都不对。	两个都不对
+60	C	She is too tired to walk any further.	她太累了，走不动了。	太累；走不动
+61	D	If it rains tomorrow, we will stay at home.	如果明天下雨，我们就待在家里。	条件关系；明天；在家
+62	D	Although he was ill, he still went to work.	虽然他生病了，但还是去上班了。	让步关系；生病；上班
+63	D	I will call you when I arrive at the airport.	我到机场时会给你打电话。	到机场；打电话；时间先后
+64	D	The man who is standing by the door is my uncle.	站在门边的那个人是我叔叔。	定语从句；舅舅/叔叔等均可
+65	D	This is the book that I told you about.	这就是我跟你说过的那本书。	定语从句；说过
+66	D	Because she missed the bus, she was late for class.	因为她没赶上公共汽车，所以上课迟到了。	因果；公交；迟到
+67	D	I think that he is telling the truth.	我认为他说的是实话。	认为；实话
+68	D	He said that he would never come back.	他说他再也不会回来了。	他说；再也不
+69	D	I don't know where she went.	我不知道她去了哪里。	不知道；她去哪里
+70	D	As soon as she heard the news, she started to cry.	她一听到这个消息就哭了起来。	一……就；消息；哭
+71	D	Not only does he sing well, but he also dances beautifully.	他不仅歌唱得好，舞也跳得很美。	不仅唱歌还有跳舞，两者都要有
+72	D	If I were you, I would not accept that offer.	如果我是你，我不会接受那个提议。	虚拟；否定；接受。offer 可译提议/录用
+73	D	She studied hard so that she could pass the exam.	她努力学习，以便能通过考试。	目的关系；通过考试
+74	D	The more you practice, the better you will become.	你练习得越多，就会变得越好。	越……越
+75	D	The house where I grew up has been sold.	我长大的那所房子已经被卖掉了。	我长大；已被卖
+76	D	Unless you hurry, you will miss the train.	除非你快点，否则会赶不上火车。	除非/否则的逻辑不能反
+77	D	Before you leave, remember to turn off the lights.	离开之前，记得关灯。	之前；关灯
+78	D	I wish I had listened to my parents' advice.	我真希望当初听了父母的建议。	含后悔义（实际没听）
+79	D	What surprised me most was that nobody complained.	最让我惊讶的是没有人抱怨。	最惊讶；没人抱怨
+80	D	Whether he comes or not, the meeting will start at nine.	不管他来不来，会议都将在九点开始。	无论；九点
+81	E	He let the cat out of the bag.	他泄露了秘密。	习语：泄露秘密，直译猫和袋子不通过
+82	E	Break a leg!	祝你好运！	习语：祝好运，直译断腿不通过
+83	E	Practice makes perfect.	熟能生巧。	习语：多练习才能精通
+84	E	The old man kicked the bucket last year.	那位老人去年去世了。	习语：去世；去年。直译踢桶不通过
+85	E	Time flies like an arrow.	光阴似箭。	习语：时间飞逝
+86	E	She went to the bank to deposit her salary.	她去银行存工资。	bank=银行；存工资
+87	E	They sat on the bank of the river and watched the sunset.	他们坐在河岸上看日落。	bank=河岸；日落
+88	E	The trophy does not fit in the suitcase because it is too big.	奖杯放不进手提箱，因为奖杯太大了。	奖杯放进箱子，方向不能反；太大；“它”可接受
+89	E	Scientists have discovered a new species of fish in the deep ocean.	科学家在深海发现了一种新的鱼类。	科学家；新鱼种；深海
+90	E	The government announced on Tuesday that it would raise the minimum wage next year.	政府周二宣布，明年将提高最低工资。	周二；明年；提高最低工资
+91	E	Climate change is one of the greatest challenges facing humanity today.	气候变化是当今人类面临的最大挑战之一。	气候变化；最大挑战之一；人类
+92	E	Artificial intelligence is changing the way people work and communicate.	人工智能正在改变人们工作和交流的方式。	人工智能；改变；工作和交流
+93	E	The company's profits fell by ten percent in the third quarter of 2023.	该公司2023年第三季度的利润下降了百分之十。	利润下降；百分之十；2023年第三季度
+94	E	The flight from Shanghai to London was delayed for six hours because of heavy fog.	由于大雾，从上海飞往伦敦的航班延误了六个小时。	上海到伦敦方向；六小时；大雾
+95	E	Dr. Smith, who has taught at the university for thirty years, will retire in June.	在这所大学任教三十年的史密斯博士将于六月退休。	史密斯；三十年；六月；退休
+96	E	Reading not only broadens our knowledge but also helps us understand people from different cultures.	阅读不仅能拓宽我们的知识，还能帮助我们理解不同文化背景的人。	两个作用都要有；不同文化
+97	E	Despite the heavy traffic, we managed to arrive at the station ten minutes before the train departed.	尽管交通拥堵，我们还是在火车发车前十分钟赶到了车站。	尽管；拥堵；提前十分钟
+98	E	Had it not been for your help, I could never have finished this project on time.	要不是你的帮助，我绝不可能按时完成这个项目。	要不是（实际得到了帮助）；按时完成
+99	E	The children, tired after a long day at the beach, fell asleep as soon as they got into the car.	孩子们在海滩玩了一整天，累了，一上车就睡着了。	海滩；累；一上车就睡着
+100	E	Many young people leave their hometowns to look for better jobs in big cities, even though the cost of living there is much higher.	许多年轻人离开家乡去大城市寻找更好的工作，尽管那里的生活成本高得多。	离开家乡；大城市好工作；生活成本更高

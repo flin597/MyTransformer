@@ -3,7 +3,7 @@ import os
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.model import Transformer, create_padding_mask, create_tgt_mask
-from modules.dataset import build_vocab_from_dataset, load_cmn_eng, tokenize_en
+from modules.dataset import build_vocab_from_dataset, load_cmn_eng, tokenize_en, DATA_PATH
 
 def translate(sentence_en, model, src_vocab, tgt_vocab, device, max_len=50):
     model.eval()
@@ -45,7 +45,7 @@ def main():
     # 2. 重建词表
     print("Loading vocabularies...")
     # 必须和训练时用的一样
-    raw_dataset = load_cmn_eng("data/cmn.txt")
+    raw_dataset = load_cmn_eng(DATA_PATH)
     src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
     tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
     
@@ -57,8 +57,8 @@ def main():
         d_model=d_model, num_head=num_heads, num_layer=num_layers, d_ffn=d_ff
     ).to(device)
     
-    # ！！！这里换成你实际保存的 .pt 文件名字！！！
-    checkpoint_path = "checkpoint_epoch_10.pt" 
+    # 选用参数
+    checkpoint_path = "checkpoint_epoch_30.pt" 
     try:
         model.load_state_dict(torch.load(checkpoint_path, map_location=device))
         print("Model loaded.")
@@ -66,9 +66,7 @@ def main():
         print(f"File {checkpoint_path} not found. Check the file name.")
         return
 
-    # ==========================================
-    # 4. 交互式终端启动！
-    # ==========================================
+    # 4. 交互式终端启动
     print("\n" + "="*40)
     print("Hand-written Transformer translator (English to Chinese)")
     print("Type an English sentence and press Enter. Type 'q' to quit.")
@@ -76,7 +74,7 @@ def main():
     
     while True:
         try:
-            # 等待你输入
+            # 输入
             user_input = input("English: ")
             
             # 退出条件
