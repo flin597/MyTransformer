@@ -20,7 +20,7 @@ OPUS_PATH = "data/raw/opus-100/train.parquet"
 TRANSLATION2019_PATH = "data/raw/translation2019zh/part-0002.parquet"
 IDIOM_PATH = "data/raw/idiomkb/en_idiom_meaning.json"
 BENCHMARK_PATH = "test/test_reference.tsv"
-OUTPUT_PATH = "data/train_v2.tsv"
+OUTPUT_PATH = "data/all_v2.tsv"
 
 # 要和 train.py 的 max_len=50 对应：中文还要留出 <sos> 和 <eos> 两个位置
 MAX_EN_TOKENS = 50

@@ -46,8 +46,8 @@ def main():
     print("Loading vocabularies...")
     # 必须和训练时用的一样
     raw_dataset = load_cmn_eng(DATA_PATH)
-    src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
-    tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
+    src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=2)
+    tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=2)
     
     # 3. 加载模型
     print("Loading model weights (make sure the .pt file name is correct)...")

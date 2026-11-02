@@ -18,8 +18,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 1. 重建词表，必须和训练时用同一份数据
 raw_dataset = load_cmn_eng(DATA_PATH)
-src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
-tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
+src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=2)
+tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=2)
 
 # 2. 加载模型
 model = Transformer(

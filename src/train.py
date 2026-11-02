@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 # 注意：确保 model.py 里有 TransformerModel, create_padding_mask, create_tgt_mask
 # 确保 dataset.py 里有 TranslationDataset, build_vocab_from_dataset
 from src.model import Transformer, create_padding_mask, create_tgt_mask
-from modules.dataset import TranslationDataset, build_vocab_from_dataset, load_cmn_eng, DATA_PATH
+from modules.dataset import TranslationDataset, build_vocab_from_dataset, load_cmn_eng, DATA_PATH, VALID_PATH
 
 def main():
 
@@ -30,8 +30,8 @@ def main():
     raw_dataset = load_cmn_eng(DATA_PATH)
     
     print("Building vocabularies...")
-    src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
-    tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
+    src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=2)
+    tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=2)
     
     # 动态获取词表大小
     src_vocab_size = len(src_vocab)
@@ -40,6 +40,12 @@ def main():
 
     dataset = TranslationDataset(raw_dataset, src_vocab, tgt_vocab, max_len=max_len)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+
+    # 验证集：词表沿用训练集的，不打乱
+    raw_valid = load_cmn_eng(VALID_PATH)
+    valid_dataset = TranslationDataset(raw_valid, src_vocab, tgt_vocab, max_len=max_len)
+    valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
+    print(f"Train pairs: {len(dataset)}, validation pairs: {len(valid_dataset)}")
 
     # 3. 初始化模型、损失函数、优化器
     model = Transformer(
@@ -91,7 +97,24 @@ def main():
                 print(f"Epoch [{epoch+1}/{epochs}], Batch [{batch_idx}/{len(dataloader)}], Loss: {loss.item():.4f}")
                 
         avg_loss = total_loss / len(dataloader)
-        print(f"Epoch {epoch+1} finished, average loss: {avg_loss:.4f}\n")
+        print(f"Epoch {epoch+1} finished, average loss: {avg_loss:.4f}")
+
+        # 每轮结束在验证集上算一次 loss，不更新参数
+        model.eval()
+        total_valid_loss = 0
+        with torch.no_grad():
+            for batch in valid_dataloader:
+                src = batch["src"].to(device)
+                tgt_input = batch["tgt_input"].to(device)
+                tgt_label = batch["tgt_label"].to(device)
+                src_mask = create_padding_mask(src, pad_token=src_vocab.pad_idx).to(device)
+                tgt_mask = create_tgt_mask(tgt_input, pad_token=tgt_vocab.pad_idx).to(device)
+                outputs = model(src, tgt_input, src_mask, tgt_mask)
+                outputs = outputs.permute(0, 2, 1)
+                loss = criterion(outputs, tgt_label)
+                total_valid_loss += loss.item()
+        avg_valid_loss = total_valid_loss / len(valid_dataloader)
+        print(f"Epoch {epoch+1} validation loss: {avg_valid_loss:.4f}\n")
         # 每个 epoch 结束后保存模型
         save_path = f"./checkpoint_epoch_{epoch+1}.pt"
         torch.save(model.state_dict(), save_path)

@@ -5,6 +5,8 @@ import re
 
 # 训练、推理、测试都从这里读同一份数据，词表才一致
 DATA_PATH = "data/train_v2.tsv"
+# 验证集不参与训练，只用来看每轮的效果
+VALID_PATH = "data/valid_v2.tsv"
 
 _EN_TOKEN = re.compile(r"\w+(?:'\w+)*|[^\w\s]")#不加这个相同的词会因为跟的标点不同而被判作不同的出现次数
 
