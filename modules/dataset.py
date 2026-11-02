@@ -1,14 +1,24 @@
-import os
 import torch
 from torch.utils.data import Dataset, DataLoader
 from collections import Counter#计数器，返回一个字典{键：出现次数，...}
-from datasets import load_dataset
 import re
 
 _EN_TOKEN = re.compile(r"\w+(?:'\w+)*|[^\w\s]")#不加这个相同的词会因为跟的标点不同而被判作不同的出现次数
 
 def tokenize_en(text):
     return _EN_TOKEN.findall(text)
+
+def load_cmn_eng(path):
+    """读取 cmn.txt，每行格式：英文\t中文\t来源说明"""
+    dataset = []
+    with open(path, encoding="utf-8") as f:
+        for line in f:
+            columns = line.rstrip("\n").split("\t")
+            en_text = columns[0]
+            zh_text = columns[1]
+            #整理成和原来一样的格式，后面取数据的代码不用改
+            dataset.append({"translation": {"en": en_text, "zh": zh_text}})
+    return dataset
 
 class Vocab:
     def __init__(self, tokens=None, min_freq=1):
@@ -54,16 +64,20 @@ def build_vocab_from_dataset(dataset, lang_key, min_freq=2):
     for item in dataset:
         text = item["translation"][lang_key]#["translation"]里面存中英文对照，格式是{"id":"12445","translation":{"zh":"你好","en":"Hello"}，lang_key决定取中文还是英文
         
-        # 简易分词：中文按字切分，英文按空格切分
+        # 简易分词：中文按字切分，英文按词和标点切分
         if lang_key == "zh":
             tokens = list(text) # 把 "我爱你" 变成 ["我", "爱", "你"]
         else:
-            tokens = tokenize_en(text) # 英文按空格切分
+            tokens = tokenize_en(text) # 英文按词和标点切分
             
         counter.update(tokens)
 
     # 提取频率 >= min_freq 的词及其频率
-    return Vocab(tokens=tokens)
+    kept_tokens = []
+    for token, freq in counter.items():
+        if freq >= min_freq:
+            kept_tokens.append(token)
+    return Vocab(tokens=kept_tokens)
 
 class TranslationDataset(Dataset):
     def __init__(self, dataset, src_vocab, tgt_vocab, max_len=128):
@@ -77,10 +91,11 @@ class TranslationDataset(Dataset):
 
     def _tokenize_and_pad(self, text, vocab, is_src=True):
         if is_src:
-            # 中文按字分
-            tokens = list(text)
+            # 源语言是英文，按词和标点分
+            tokens = tokenize_en(text)
         else:
-            tokens = text.split() #英文按空格分
+            # 目标语言是中文，按字分，需要加上 <sos> 和 <eos>
+            tokens = ["<sos>"] + list(text) + ["<eos>"]
             
         ids = vocab.encode(tokens)
         
@@ -97,12 +112,9 @@ class TranslationDataset(Dataset):
         en_text, zh_text = pair["en"], pair["zh"]
 
         # 1. 处理源语言
-        src_tokens = tokenize_en(en_text) 
         src_ids = self._tokenize_and_pad(en_text,self.src_vocab,is_src=True)
         # 2. 处理目标语言
-        # 需要加上 <sos> 和 <eos>
-        tgt_tokens = ["<sos>"] +list(zh_text) + ["<eos>"]
-        tgt_ids = self.tgt_vocab.encode(tgt_tokens)
+        tgt_ids = self._tokenize_and_pad(zh_text,self.tgt_vocab,is_src=False)
 
         # 3. Teacher Forcing 切分
         tgt_input = tgt_ids[:-1]   # Decoder 输入 (以 <sos> 开头)
@@ -116,20 +128,17 @@ class TranslationDataset(Dataset):
 
 # 4. 测试代码（直接运行这个文件就会执行）
 if __name__ == "__main__":
-    print("正在测试数据管道...")
-    
-    # 1. 设置国内镜像加速（如果不设置，下载可能会非常慢）
-    os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+    print("Testing the data pipeline...")
 
-    print("正在从 HuggingFace 下载数据集 (首次运行需要几十秒)...")
+    print("Loading the dataset...")
     # 为了测试方便，我们只取前 100 条数据，免得等太久
-    raw_dataset = load_dataset("Helsinki-NLP/news_commentary", "en-zh", split="train[:100]", trust_remote_code=True)
-    
-    print(f"成功加载了 {len(raw_dataset)} 条数据！")
-    print("第一条数据示例:", raw_dataset[0]["translation"])
+    raw_dataset = load_cmn_eng("data/cmn.txt")[:100]
+
+    print(f"Loaded {len(raw_dataset)} pairs.")
+    print("First example:", raw_dataset[0]["translation"])
 
     # 2. 构建词表
-    print("\n正在构建词表...")
+    print("\nBuilding vocabularies...")
     src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
     tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
     print(f"Size of English_vocab: {len(src_vocab)} | Size of Chinese_vocab: {len(tgt_vocab)}")
@@ -139,16 +148,16 @@ if __name__ == "__main__":
     dataloader = DataLoader(dataset, batch_size=4, shuffle=True)
 
     # 4. 取出一个 batch 看看
-    print("\n正在测试 DataLoader 取数据...")
+    print("\nTesting the DataLoader...")
     for batch in dataloader:
-        print("src (中文输入) 形状:", batch["src"].shape)
-        print("tgt_input (Decoder输入) 形状:", batch["tgt_input"].shape)
-        print("tgt_label (预测标签) 形状:", batch["tgt_label"].shape)
+        print("src (English input) shape:", batch["src"].shape)
+        print("tgt_input (Decoder input) shape:", batch["tgt_input"].shape)
+        print("tgt_label (prediction label) shape:", batch["tgt_label"].shape)
         
-        print("\n看看第一个样本的 ID 长啥样：")
-        print("中文 ID:", batch["src"][0].tolist())
-        print("英文输入 ID:", batch["tgt_input"][0].tolist())
-        print("英文标签 ID:", batch["tgt_label"][0].tolist())
+        print("\nIDs of the first sample:")
+        print("English IDs:", batch["src"][0].tolist())
+        print("Chinese input IDs:", batch["tgt_input"][0].tolist())
+        print("Chinese label IDs:", batch["tgt_label"][0].tolist())
         break
 
-    print("\n数据管道测试通过！可以接入模型训练了。")
+    print("\nData pipeline test passed.")

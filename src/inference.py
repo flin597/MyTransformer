@@ -1,16 +1,15 @@
 import torch
 import os
 import sys
-from datasets import load_dataset
-from model import Transformer, create_padding_mask, create_tgt_mask
-from modules.dataset import build_vocab_from_dataset
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from src.model import Transformer, create_padding_mask, create_tgt_mask
+from modules.dataset import build_vocab_from_dataset, load_cmn_eng, tokenize_en
 
-def translate(sentence_zh, model, src_vocab, tgt_vocab, device, max_len=50):
-    model.eval() 
-    tokens = list(sentence_zh)
+def translate(sentence_en, model, src_vocab, tgt_vocab, device, max_len=50):
+    model.eval()
+    tokens = tokenize_en(sentence_en)
     src_ids = src_vocab.encode(tokens)
-    print(f"【Debug】输入的字: {tokens}, 转换的ID: {src_ids}")
+    print(f"[Debug] Input tokens: {tokens}, IDs: {src_ids}")
     src_tensor = torch.tensor([src_ids], dtype=torch.long).to(device)
     src_mask = create_padding_mask(src_tensor, pad_token=src_vocab.pad_idx).to(device)
 
@@ -30,10 +29,10 @@ def translate(sentence_zh, model, src_vocab, tgt_vocab, device, max_len=50):
                 
     output_ids = tgt_tensor[0].tolist()
     output_words = tgt_vocab.decode(output_ids)
-    print(f"【Debug】模型原始输出 ID: {output_ids}")
-    print(f"【Debug】模型原始输出词: {output_words}")
+    print(f"[Debug] Raw output IDs: {output_ids}")
+    print(f"[Debug] Raw output tokens: {output_words}")
     final_words = [w for w in output_words if w not in ["<sos>", "<eos>", "<pad>"]]
-    return " ".join(final_words)
+    return "".join(final_words)
 
 def main():
     # 1. 基础设置
@@ -44,15 +43,14 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     # 2. 重建词表
-    print("📦 正在加载词表...")
-    os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
+    print("Loading vocabularies...")
     # 必须和训练时用的一样
-    raw_dataset = load_dataset("Helsinki-NLP/news_commentary", "en-zh", split="train[:10000]", trust_remote_code=True)
-    src_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
-    tgt_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
+    raw_dataset = load_cmn_eng("data/cmn.txt")
+    src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
+    tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
     
     # 3. 加载模型
-    print("🧠 正在加载模型权重 (请确保 .pt 文件名字正确)...")
+    print("Loading model weights (make sure the .pt file name is correct)...")
     model = Transformer(
         src_vocab_size=len(src_vocab), 
         tgt_vocab_size=len(tgt_vocab), 
@@ -63,43 +61,43 @@ def main():
     checkpoint_path = "checkpoint_epoch_10.pt" 
     try:
         model.load_state_dict(torch.load(checkpoint_path, map_location=device))
-        print("✅ 模型加载成功！")
+        print("Model loaded.")
     except FileNotFoundError:
-        print(f"❌ 找不到文件 {checkpoint_path}，请检查文件名是否正确。")
+        print(f"File {checkpoint_path} not found. Check the file name.")
         return
 
     # ==========================================
     # 4. 交互式终端启动！
     # ==========================================
     print("\n" + "="*40)
-    print("🤖 欢迎使用手搓 Transformer 翻译器！")
-    print("💡 输入中文并回车，输入 'q' 退出。")
+    print("Hand-written Transformer translator (English to Chinese)")
+    print("Type an English sentence and press Enter. Type 'q' to quit.")
     print("="*40 + "\n")
     
     while True:
         try:
             # 等待你输入
-            user_input = input("请输入中文: ")
+            user_input = input("English: ")
             
             # 退出条件
             if user_input.strip().lower() == 'q':
-                print("👋 退出翻译器，拜拜！")
+                print("Exiting the translator.")
                 break
-                
+
             # 跳过空输入
             if not user_input.strip():
                 continue
                 
             # 开始翻译
-            en_result = translate(user_input, model, src_vocab, tgt_vocab, device)
-            print(f"👉 翻译结果: {en_result}\n")
+            zh_result = translate(user_input, model, src_vocab, tgt_vocab, device)
+            print(f"Translation: {zh_result}\n")
             
         except KeyboardInterrupt:
             # 按 Ctrl+C 也能优雅退出
-            print("\n👋 退出翻译器，拜拜！")
+            print("\nExiting the translator.")
             break
         except Exception as e:
-            print(f"❌ 发生错误: {e}\n")
+            print(f"Error: {e}\n")
 
 if __name__ == "__main__":
     main()

@@ -26,7 +26,7 @@ class Transformer(nn.Module):
         #把decoder输出的512维度映射回目标语言的词表大小
         self.fc_out=nn.Linear(d_model,tgt_vocab_size)
     def forward(self,src,tgt,src_mask,tgt_mask):
-        #编码器处理中文输入
+        #编码器处理英文输入
         encoder_output=self.encoder(src,src_mask)
         #解码器吐翻译
         decoder_output=self.decoder(tgt,encoder_output,src_mask,tgt_mask)

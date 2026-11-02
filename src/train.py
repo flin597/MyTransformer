@@ -1,4 +1,3 @@
-import os
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -8,15 +7,14 @@ from torch.utils.data import DataLoader
 # 注意：确保 model.py 里有 TransformerModel, create_padding_mask, create_tgt_mask
 # 确保 dataset.py 里有 TranslationDataset, build_vocab_from_dataset
 from src.model import Transformer, create_padding_mask, create_tgt_mask
-from modules.dataset import TranslationDataset, build_vocab_from_dataset
-from datasets import load_dataset
+from modules.dataset import TranslationDataset, build_vocab_from_dataset, load_cmn_eng
 
 def main():
     # ==========================================
     # 1. 基础配置（针对本地 CPU 极小化）
     # ==========================================
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"当前使用的设备: {device}")
+    print(f"Device: {device}")
     
     # 为了本地跑得快，模型参数全部调小
     d_model = 256
@@ -31,19 +29,18 @@ def main():
     # ==========================================
     # 2. 准备数据
     # ==========================================
-    print("正在加载数据集...")
-    os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
-    # 为了快，只取前 200 条数据训练
-    raw_dataset = load_dataset("Helsinki-NLP/news_commentary", "en-zh", split="train[:10000]", trust_remote_code=True)
+    print("Loading the dataset...")
+    # 日常对话短句数据集 cmn-eng，全部用于训练
+    raw_dataset = load_cmn_eng("data/cmn.txt")
     
-    print("正在构建词表...")
+    print("Building vocabularies...")
     src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
     tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
     
     # 动态获取词表大小
     src_vocab_size = len(src_vocab)
     tgt_vocab_size = len(tgt_vocab)
-    print(f"中文词表大小: {src_vocab_size}, 英文词表大小: {tgt_vocab_size}")
+    print(f"English vocab size: {src_vocab_size}, Chinese vocab size: {tgt_vocab_size}")
 
     dataset = TranslationDataset(raw_dataset, src_vocab, tgt_vocab, max_len=max_len)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
@@ -68,7 +65,7 @@ def main():
     # ==========================================
     # 4. 开始训练
     # ==========================================
-    print("\n开始训练...")
+    print("\nStarting training...")
     for epoch in range(epochs):
         model.train()
         total_loss = 0
@@ -102,16 +99,16 @@ def main():
                 print(f"Epoch [{epoch+1}/{epochs}], Batch [{batch_idx}/{len(dataloader)}], Loss: {loss.item():.4f}")
                 
         avg_loss = total_loss / len(dataloader)
-        print(f"✅ Epoch {epoch+1} 结束, 平均 Loss: {avg_loss:.4f}\n")
+        print(f"✅ Epoch {epoch+1} finished, average loss: {avg_loss:.4f}\n")
         # 每个 epoch 结束后保存模型
         save_path = f"./checkpoint_epoch_{epoch+1}.pt"
         torch.save(model.state_dict(), save_path)
-        print(f"💾 模型已保存至 {save_path}")
+        print(f"💾 Model saved to {save_path}")
 
     # ==========================================
     # 5. 简单测试（翻译一句话）
     # ==========================================
-    print("🔍 测试一下模型输出（由于数据极少，模型此时还在瞎猜，属于正常现象）：")
+    print("🔍 Testing the model output on the first sentence:")
     model.eval()
     
     # 取测试集第一句话
@@ -133,8 +130,8 @@ def main():
             if next_word == tgt_vocab.eos_idx:
                 break
                 
-    print("模型生成的英文 ID 序列:", tgt_test[0].tolist())
-    print("翻译出来的英文（可能有 <unk>）:", tgt_vocab.decode(tgt_test[0].tolist()))
+    print("Generated Chinese IDs:", tgt_test[0].tolist())
+    print("Generated Chinese (may contain <unk>):", tgt_vocab.decode(tgt_test[0].tolist()))
 
 if __name__ == "__main__":
     main()
