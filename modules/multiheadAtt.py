@@ -39,7 +39,8 @@ class multiheadAtt(nn.Module):
         queries=self.W_q(queries)
         keys=self.W_k(keys)
         values=self.W_v(values)
-
+        
+        #拆分成多头
         queries=queries.view(batch_size,-1,self.num_head,queries.size(-1)//self.num_head).transpose(1,2)
         keys=keys.view(batch_size,-1,self.num_head,keys.size(-1)//self.num_head).transpose(1,2)
         values=values.view(batch_size,-1,self.num_head,values.size(-1)//self.num_head).transpose(1,2)

@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader
 # 导入你写好的模型和数据管道
 # 注意：确保 model.py 里有 TransformerModel, create_padding_mask, create_tgt_mask
 # 确保 dataset.py 里有 TranslationDataset, build_vocab_from_dataset
-from model import Transformer, create_padding_mask, create_tgt_mask
+from src.model import Transformer, create_padding_mask, create_tgt_mask
 from modules.dataset import TranslationDataset, build_vocab_from_dataset
 from datasets import load_dataset
 
@@ -25,8 +25,8 @@ def main():
     d_ff = 1024
     batch_size = 32
     max_len = 50
-    epochs = 20 
-    lr = 0.0001
+    epochs = 10 # 本地跑 5 个 Epoch 意思一下
+    lr = 0.001
 
     # ==========================================
     # 2. 准备数据
@@ -34,11 +34,11 @@ def main():
     print("正在加载数据集...")
     os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
     # 为了快，只取前 200 条数据训练
-    raw_dataset = load_dataset("Helsinki-NLP/news_commentary", "en-zh", split="train[:100000]", trust_remote_code=True)
+    raw_dataset = load_dataset("Helsinki-NLP/news_commentary", "en-zh", split="train[:10000]", trust_remote_code=True)
     
     print("正在构建词表...")
-    src_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
-    tgt_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
+    src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
+    tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
     
     # 动态获取词表大小
     src_vocab_size = len(src_vocab)

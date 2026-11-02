@@ -1,8 +1,14 @@
 import os
 import torch
 from torch.utils.data import Dataset, DataLoader
-from collections import Counter
+from collections import Counter#计数器，返回一个字典{键：出现次数，...}
 from datasets import load_dataset
+import re
+
+_EN_TOKEN = re.compile(r"\w+(?:'\w+)*|[^\w\s]")#不加这个相同的词会因为跟的标点不同而被判作不同的出现次数
+
+def tokenize_en(text):
+    return _EN_TOKEN.findall(text)
 
 class Vocab:
     def __init__(self, tokens=None, min_freq=1):
@@ -16,13 +22,14 @@ class Vocab:
         self.idx_to_token = [self.pad_token, self.sos_token, self.eos_token, self.unk_token]
         
         if tokens is not None:
-            counter = Counter(tokens)
+            counter = Counter(tokens)#统计出现次数
             # 过滤低频词
             filtered_tokens = [token for token, freq in counter.items() if freq >= min_freq]
             # 按频率降序排列
             filtered_tokens.sort(key=lambda x: counter[x], reverse=True)
             self.idx_to_token.extend(filtered_tokens)
-        
+
+        #交换键和值，使能直接用token查索引，用token_to_idx["..."]获取id
         self.token_to_idx = {token: idx for idx, token in enumerate(self.idx_to_token)}
         
         # 记录特殊字符的 ID
@@ -41,31 +48,26 @@ class Vocab:
         return [self.idx_to_token[idx] for idx in ids]
 
 
-def build_vocab_from_dataset(hf_dataset, lang_key, min_freq=2):
-    """遍历 HuggingFace 数据集，提取词汇构建 Vocab"""
+def build_vocab_from_dataset(dataset, lang_key, min_freq=2):
+    """遍历数据集，提取词汇构建 Vocab"""
     counter = Counter()
-    for item in hf_dataset:
-        text = item["translation"][lang_key]
+    for item in dataset:
+        text = item["translation"][lang_key]#["translation"]里面存中英文对照，格式是{"id":"12445","translation":{"zh":"你好","en":"Hello"}，lang_key决定取中文还是英文
         
         # 简易分词：中文按字切分，英文按空格切分
         if lang_key == "zh":
             tokens = list(text) # 把 "我爱你" 变成 ["我", "爱", "你"]
         else:
-            tokens = text.split() # 英文按空格切分
+            tokens = tokenize_en(text) # 英文按空格切分
             
         counter.update(tokens)
 
-    # 提取频率 >= min_freq 的词
-    tokens = [tok for tok, freq in counter.items() if freq >= min_freq]
+    # 提取频率 >= min_freq 的词及其频率
     return Vocab(tokens=tokens)
 
-
-# ==========================================
-# 3. PyTorch Dataset 类
-# ==========================================
 class TranslationDataset(Dataset):
-    def __init__(self, hf_dataset, src_vocab, tgt_vocab, max_len=128):
-        self.data = hf_dataset
+    def __init__(self, dataset, src_vocab, tgt_vocab, max_len=128):
+        self.data = dataset
         self.src_vocab = src_vocab
         self.tgt_vocab = tgt_vocab
         self.max_len = max_len
@@ -74,38 +76,33 @@ class TranslationDataset(Dataset):
         return len(self.data)
 
     def _tokenize_and_pad(self, text, vocab, is_src=True):
-        if is_src and "zh" in str(vocab.token_to_idx.get("我", "")):
-            # 粗劣的判定，如果是中文就按字分，否则按空格分
+        if is_src:
+            # 中文按字分
             tokens = list(text)
-        elif is_src:
-            tokens = list(text) # 源语言是中文
         else:
-            tokens = text.split() # 目标语言是英文
+            tokens = text.split() #英文按空格分
             
         ids = vocab.encode(tokens)
         
-        # 截断与补齐
+        # 截断
         ids = ids[:self.max_len]
+        #补齐
         ids = ids + [vocab.pad_idx] * (self.max_len - len(ids))
         return ids
 
+    #pytorch数据加载器会自动调用__getitem__
     def __getitem__(self, idx):
+        #抓第idx条数据然后把中文和英文分别拿出来
         pair = self.data[idx]["translation"]
-        zh_text, en_text = pair["zh"], pair["en"]
+        en_text, zh_text = pair["en"], pair["zh"]
 
-        # 1. 处理源语言（中文）
-        # 中文按字切分，遇到生僻字也会变成 unk
-        src_tokens = list(zh_text) 
-        src_ids = self.src_vocab.encode(src_tokens)
-        src_ids = src_ids[:self.max_len]
-        src_ids = src_ids + [self.src_vocab.pad_idx] * (self.max_len - len(src_ids))
-
-        # 2. 处理目标语言（英文）
+        # 1. 处理源语言
+        src_tokens = tokenize_en(en_text) 
+        src_ids = self._tokenize_and_pad(en_text,self.src_vocab,is_src=True)
+        # 2. 处理目标语言
         # 需要加上 <sos> 和 <eos>
-        tgt_tokens = ["<sos>"] + en_text.split() + ["<eos>"]
+        tgt_tokens = ["<sos>"] +list(zh_text) + ["<eos>"]
         tgt_ids = self.tgt_vocab.encode(tgt_tokens)
-        tgt_ids = tgt_ids[:self.max_len]
-        tgt_ids = tgt_ids + [self.tgt_vocab.pad_idx] * (self.max_len - len(tgt_ids))
 
         # 3. Teacher Forcing 切分
         tgt_input = tgt_ids[:-1]   # Decoder 输入 (以 <sos> 开头)
@@ -117,12 +114,9 @@ class TranslationDataset(Dataset):
             "tgt_label": torch.tensor(tgt_label, dtype=torch.long),
         }
 
-
-# ==========================================
 # 4. 测试代码（直接运行这个文件就会执行）
-# ==========================================
 if __name__ == "__main__":
-    print("🚀 正在测试数据管道...")
+    print("正在测试数据管道...")
     
     # 1. 设置国内镜像加速（如果不设置，下载可能会非常慢）
     os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
@@ -136,9 +130,9 @@ if __name__ == "__main__":
 
     # 2. 构建词表
     print("\n正在构建词表...")
-    src_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
-    tgt_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
-    print(f"中文词表大小: {len(src_vocab)} | 英文词表大小: {len(tgt_vocab)}")
+    src_vocab = build_vocab_from_dataset(raw_dataset, "en", min_freq=1)
+    tgt_vocab = build_vocab_from_dataset(raw_dataset, "zh", min_freq=1)
+    print(f"Size of English_vocab: {len(src_vocab)} | Size of Chinese_vocab: {len(tgt_vocab)}")
 
     # 3. 创建 Dataset 和 DataLoader
     dataset = TranslationDataset(raw_dataset, src_vocab, tgt_vocab, max_len=20) # 为了测试，max_len 设小一点
@@ -157,4 +151,4 @@ if __name__ == "__main__":
         print("英文标签 ID:", batch["tgt_label"][0].tolist())
         break
 
-    print("\n✅ 数据管道测试通过！可以接入模型训练了。")
+    print("\n数据管道测试通过！可以接入模型训练了。")
