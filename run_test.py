@@ -6,7 +6,7 @@ from src.inference import translate
 from modules.dataset import build_vocab_from_dataset, load_cmn_eng, DATA_PATH
 
 # 配置：要和训练时一样
-d_model = 256
+d_model = 512
 num_heads = 8
 num_layers = 4
 d_ff = 1024

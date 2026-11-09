@@ -15,14 +15,14 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
     
-    d_model = 256
+    d_model = 512
     num_heads = 8
     num_layers = 4
     d_ff = 1024
     batch_size = 32
     max_len = 50
     epochs = 30
-    lr = 0.001
+    lr = 0.0003
 
     # 2. 准备数据
     print("Loading the dataset...")

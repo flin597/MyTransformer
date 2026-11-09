@@ -36,7 +36,7 @@ def translate(sentence_en, model, src_vocab, tgt_vocab, device, max_len=50):
 
 def main():
     # 1. 基础设置
-    d_model = 256      
+    d_model = 512      
     num_heads = 8
     num_layers = 4
     d_ff = 1024
